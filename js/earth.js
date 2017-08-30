@@ -19,8 +19,8 @@
     var raycaster = new THREE.Raycaster(),
         mouse     = new THREE.Vector2();
 
-	var width     = window.innerWidth,
-		height    = window.innerHeight;
+	var width     = 0.749*window.innerWidth,
+		height    = 0.5*window.innerHeight;
 
 	// Earth params
 	var radius   = 1,
@@ -48,7 +48,7 @@
     cityLoc[2] = [1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)];
 
     for(var i = 0; i < 3; i++) {
-        city[i] = new createCity(0.01, 0xff0000);
+        city[i] = new createCity(0.015, 0xff0000);
         city[i].position.x = cityLoc[i][0];
         city[i].position.y = cityLoc[i][1];
         city[i].position.z = cityLoc[i][2];
@@ -61,6 +61,9 @@
         points[i] = new cityObject();
     }
     var pointCount = 0;
+
+    // Work on adding points/lines to map
+
 
 	render();
 
@@ -93,11 +96,14 @@
                 points[pointCount].lat = tempLonLat[1];
 
                 pointCount += 1;
+                appendText("Lon: " + tempLonLat[0]);
+                appendText("Lat: " + tempLonLat[1]);
             }
         }
 
         if(pointCount == 2 && clicked == 1 && drawn == 0) {
             console.log("Central Angle (deg): " + centralAngle(points[0], points[1]));
+            appendText("Central Angle: " + centralAngle(points[0], points[1]) + "˚");
             //clicked = 2;
             var v1 = new THREE.Vector3(points[0].coord[0], points[0].coord[1], points[0].coord[2]);
             var v2 = new THREE.Vector3(points[1].coord[0], points[1].coord[1], points[1].coord[2]);
@@ -110,6 +116,23 @@
         renderer.render(scene, camera);
         clicked = 0;
 	}
+
+    function appendText(text) {
+        var para = document.createElement("p");
+        var node = document.createTextNode(text);
+        para.appendChild(node);
+
+        var el = document.getElementById('questions');
+        el.appendChild(para);
+    }
+
+    function convert(lat, lon){
+        MAP_WIDTH = 4096;
+        MAP_HEIGHT = 2098;
+        var y = ((-1 * lat) + 90) * (MAP_HEIGHT / 180);
+        var x = (lon + 180) * (MAP_WIDTH / 360);
+        return [x,y];
+    }
 
     function setArc3D(pointStart, pointEnd, smoothness, color, clockWise) {
         // calculate a normal ( taken from Geometry().computeFaceNormals() )
@@ -191,8 +214,8 @@
         console.log("click");
       	// calculate mouse position in normalized device coordinates
       	// (-1 to +1) for both components
-      	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-      	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+      	mouse.x = ( event.clientX / width ) * 2 - 1;
+      	mouse.y = - ( event.clientY / height ) * 2 + 1;
         clicked = 1;
     }
 

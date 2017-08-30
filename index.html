@@ -1,19 +1,26 @@
-<!doctype html>
+<!DOCTYPE>
 <html>
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>WebGL Earth</title>
 	<style>
-		body { margin: 0; overflow: hidden; background-color: #000; }
+		body { margin: 0; overflow: hidden; background-color: #000; color: white; }
 		.tm  { position: absolute; top: 10px; right: 10px; }
-		.webgl-error { font: 15px/30px monospace; text-align: center; color: #fff; margin: 50px; }
+		.webgl-error { font: 15px/30px monospace; text-align: center; color: 0xfff; margin: 50px; }
 		.webgl-error a { color: #fff; }
     </style>
 </head>
 <body>
-	<div id="webgl" style="width:100%; float:left; border-right: 2px solid white"></div>
-	<!--<div id="questions" style="width:25%; float:right; border-left: 2px solid white;"></div>-->
+
+	<div id="webgl" style="width:73%; height:50%; float:left; border-right: 2px solid white;"></div>
+	<div id="questions" style="width:25%; height:100%; float: right; border-left: 2px solid white;border-bottom: 2px solid white;">
+		<p id="log" style="margin:5px;">Select two cities on the globe</p>
+	</div>
+	<div id="map" style="width:75%; height:50%; float: bottom; border-top: 2px solid white;">
+		<img src="images/2_no_clouds_4k.jpg" style="width:99.5%;height:99.5%">
+	</div>
+
 
 	<a href="http://thematicmapping.org/" class="tm">
 		<img src="http://earthatlas.info/img/thematicmapping.png">
