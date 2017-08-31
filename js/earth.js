@@ -1,4 +1,6 @@
-// Created by Bjorn Sandvik - thematicmapping.org
+// 3d Earth created by Bjorn Sandvik - thematicmapping.org
+// Arcs and mapping created by Tom Davies - github.com/tomogwen
+
 (function () {
     function cityObject() {
         this.coord = [0,0,0];
@@ -46,15 +48,13 @@
 
     var city = [];
     var cityLoc = [];
-    cityLoc[0] = [1,0,0];
-    cityLoc[1] = [0,1,0];
-    cityLoc[2] = [0,0,1];
-    //cityLoc[3] = [2/Math.sqrt(3),0,1/Math.sqrt(3)];
-    //cityLoc[2] = [1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)];//*/
-
     var count = 0;
 
-    for(var i = 0; i < 11; i++) {
+    //cityLoc[0] = [1,0,0];
+    //cityLoc[1] = [0,1,0];
+    //cityLoc[2] = [0,0,1];
+
+    /*for(var i = 0; i < 11; i++) {
         for(var j = 0; j < 11; j++) {
             var x = i/10;
             var y = j/10
@@ -62,6 +62,21 @@
             cityLoc[count] = [x,y,z];
             count += 1;
         }
+    }//*/
+
+    var cLL = [];
+    // [lon, lat, lon(neg = W), lat(neg=S)]
+    cLL[0] = [0,  38.5047,1,1];    // london
+    cLL[1] = [0,  48.8566,1,1];    // paris
+    cLL[2] = [79.0059, 55.7128,1,1];    // nyccLL[2] = [79.0059, 55.7128,1,1];    // nyc
+    cLL[3] = [65.0059, 33.7128,1,1];    // nyc
+    cLL[4] = [10, 65.5200,1,1];    // berlin
+    cLL[5] = [-5.4964, 41.9028,1,1];    // rome
+    cLL[6] = [50,  30];    // birmingham
+
+    for(var i = 0; i < cLL.length; i++) {
+        cityLoc[i] = lonlatToCoord(cLL[i][0], cLL[i][1], cLL[i][2], cLL[i][3] );
+        count += 1;
     }//*/
 
     for(var i = 0; i < count; i++) {
@@ -161,7 +176,7 @@
         clicked = 0;
 	}
 
-    function convert(lon, lat){
+    function convert(lon, lat, lonN, latN){
         MAP_WIDTH = document.getElementById("map333").offsetWidth;
         MAP_HEIGHT = document.getElementById("map333").offsetHeight;
         var y = ((-1 * lat) + 90) * (MAP_HEIGHT / 180);
@@ -210,6 +225,15 @@
         return arc;
     }
 
+    function lonlatToCoord(lon, lat, lonN, latN) {
+        var theta = lon * Math.PI/180;
+        var phi = lat * Math.PI/180;
+        var x = Math.cos(theta) * Math.sin(phi) * lonN;
+        var z = Math.sin(theta) * Math.sin(phi) * latN;
+        var y = Math.cos(phi);
+        return [x,y,z];
+    }
+
     function coordToLonLat(x, y, z) {
         if(x > 1)
             x = 1;
@@ -233,12 +257,13 @@
         var psi = Math.atan(z/x);
         //console.log("theta: " + theta);
         //console.log("psi: " + psi);
-        //spherical to lat/long
+        // spherical to lat/long
         var lat = theta * 180/Math.PI;
         var lon = psi * 180/Math.PI;
-
+        // neg lat is S
         if(y<0)
             lat = -lat;
+        // neg lon is W
         if(z>0)
             lon = -lon;
         //console.log("Lon: "+lon);
