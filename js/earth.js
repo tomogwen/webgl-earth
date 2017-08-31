@@ -6,6 +6,9 @@
         this.lat = 0;
     }
 
+    var c = document.getElementById("mapCanvas");
+    var ctx = c.getContext("2d");
+
 	var webglEl = document.getElementById('webgl');
     var axis = new THREE.AxisHelper();
     var clicked = 0;
@@ -43,11 +46,25 @@
 
     var city = [];
     var cityLoc = [];
-    cityLoc[0] = [1,0,0];
+    /*cityLoc[0] = [1,0,0];
     cityLoc[1] = [0,1,0];
-    cityLoc[2] = [1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)];
+    cityLoc[3] = [2/Math.sqrt(3),0,1/Math.sqrt(3)];
+    cityLoc[2] = [1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)];//*/
 
-    for(var i = 0; i < 3; i++) {
+    var count = 0;
+    for(var i = 0; i < 11; i++) {
+        for(var j = 0; j < 11; j++) {
+            var x = i/10;
+            var y = j/10
+            var z = Math.sqrt(1- x**2 - y**2);
+            cityLoc[count] = [x,y,z];
+            count += 1;
+        }
+    }
+    count[2] = [-1,0,0];
+    count[3] = [0,-1,0];
+    count[4] = [0,0,-1];
+    for(var i = 0; i < count; i++) {
         city[i] = new createCity(0.015, 0xff0000);
         city[i].position.x = cityLoc[i][0];
         city[i].position.y = cityLoc[i][1];
@@ -55,15 +72,26 @@
         city[i].name = "draw";
         scene.add(city[i]);
     }
-
     var points = []
-    for(var i = 0; i < 3; i++) {
+    for(var i = 0; i < count; i++) {
         points[i] = new cityObject();
     }
     var pointCount = 0;
 
     // Work on adding points/lines to map
+    /*var mapCanvas = document.createElement('canvas');
+    mapCanvas.id = "mapCanvas"
+    mapCanvas.style = "z-index:20; position:relative;"
+    var mapDiv = document.getElementById('map333');
+    mapDiv.appendChild(mapCanvas);//*/
 
+    var canvas = document.getElementById('mapCanvas');
+
+    // Make it visually fill the positioned parent
+    canvas.style.width ='100%';
+    canvas.style.height='100%';
+    canvas.width  = 0.995*document.getElementById("map333").offsetWidth;
+    canvas.height = 0.995*document.getElementById("map333").offsetHeight;
 
 	render();
 
@@ -98,6 +126,10 @@
                 pointCount += 1;
                 appendText("Lon: " + tempLonLat[0]);
                 appendText("Lat: " + tempLonLat[1]);
+
+                var coordTemp = convert(tempLonLat[0], tempLonLat[1]);
+                appendText("Coord:  "+coordTemp);
+                drawPoint(coordTemp[0], coordTemp[1]);
             }
         }
 
@@ -117,6 +149,22 @@
         clicked = 0;
 	}
 
+    function convert(lon, lat){
+        MAP_WIDTH = document.getElementById("map333").offsetWidth;
+        MAP_HEIGHT = document.getElementById("map333").offsetHeight;
+        var y = ((-1 * lat) + 90) * (MAP_HEIGHT / 180);
+        var x = (lon + 180) * (MAP_WIDTH / 360);
+        return [x,y];
+    }
+
+    function drawPoint(x,y) {
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(x,y,5,0,2*Math.PI); // x,y,radius,startAngle,endAngle
+        ctx.stroke();
+        ctx.fill();
+    }
+
     function appendText(text) {
         var para = document.createElement("p");
         var node = document.createTextNode(text);
@@ -124,14 +172,6 @@
 
         var el = document.getElementById('questions');
         el.appendChild(para);
-    }
-
-    function convert(lat, lon){
-        MAP_WIDTH = 4096;
-        MAP_HEIGHT = 2098;
-        var y = ((-1 * lat) + 90) * (MAP_HEIGHT / 180);
-        var x = (lon + 180) * (MAP_WIDTH / 360);
-        return [x,y];
     }
 
     function setArc3D(pointStart, pointEnd, smoothness, color, clockWise) {
@@ -278,7 +318,7 @@
       	scene.add(stars);
     }
 
-    window.addEventListener('click', onMouseMove, false );
+    document.getElementById('webgl').addEventListener('click', onMouseMove, false );
     window.requestAnimationFrame(render);
 
 }());
