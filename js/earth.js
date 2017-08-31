@@ -46,12 +46,14 @@
 
     var city = [];
     var cityLoc = [];
-    /*cityLoc[0] = [1,0,0];
+    cityLoc[0] = [1,0,0];
     cityLoc[1] = [0,1,0];
-    cityLoc[3] = [2/Math.sqrt(3),0,1/Math.sqrt(3)];
-    cityLoc[2] = [1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)];//*/
+    cityLoc[2] = [0,0,1];
+    //cityLoc[3] = [2/Math.sqrt(3),0,1/Math.sqrt(3)];
+    //cityLoc[2] = [1/Math.sqrt(3),1/Math.sqrt(3),1/Math.sqrt(3)];//*/
 
     var count = 0;
+
     for(var i = 0; i < 11; i++) {
         for(var j = 0; j < 11; j++) {
             var x = i/10;
@@ -60,10 +62,8 @@
             cityLoc[count] = [x,y,z];
             count += 1;
         }
-    }
-    count[2] = [-1,0,0];
-    count[3] = [0,-1,0];
-    count[4] = [0,0,-1];
+    }//*/
+
     for(var i = 0; i < count; i++) {
         city[i] = new createCity(0.015, 0xff0000);
         city[i].position.x = cityLoc[i][0];
@@ -124,24 +124,36 @@
                 points[pointCount].lat = tempLonLat[1];
 
                 pointCount += 1;
+                appendText("Position of city " + pointCount + ":");
                 appendText("Lon: " + tempLonLat[0]);
                 appendText("Lat: " + tempLonLat[1]);
 
                 var coordTemp = convert(tempLonLat[0], tempLonLat[1]);
-                appendText("Coord:  "+coordTemp);
-                drawPoint(coordTemp[0], coordTemp[1]);
+                drawPoint(coordTemp[0], coordTemp[1], 5);
+                //appendText("3d Coord: " + [tempX, tempY, tempZ]);
             }
         }
 
         if(pointCount == 2 && clicked == 1 && drawn == 0) {
+            appendText("Distance between cities:");
             console.log("Central Angle (deg): " + centralAngle(points[0], points[1]));
-            appendText("Central Angle: " + centralAngle(points[0], points[1]) + "˚");
+            var ang = centralAngle(points[0], points[1]);
+            appendText("Central Angle: " + ang + "˚");
             //clicked = 2;
             var v1 = new THREE.Vector3(points[0].coord[0], points[0].coord[1], points[0].coord[2]);
             var v2 = new THREE.Vector3(points[1].coord[0], points[1].coord[1], points[1].coord[2]);
             var curveObject = setArc3D(v1,v2,30, 0x00ff00, false);
             scene.add(curveObject);
 
+            for(var i = 0; i < curveObject.geometry.vertices.length; i++) {
+                var x3d = curveObject.geometry.vertices[i].x;
+                var y3d = curveObject.geometry.vertices[i].y;
+                var z3d = curveObject.geometry.vertices[i].z;
+                var tLonLat = coordToLonLat(x3d, y3d, z3d);
+                var tCoord = convert(tLonLat[0], tLonLat[1]);
+                drawPoint(tCoord[0], tCoord[1], 1);
+            }
+            appendText("Arc Length = " + 2*Math.PI*6371*ang/360 + " km");
             drawn = 1;
         }
         requestAnimationFrame(render);
@@ -157,10 +169,10 @@
         return [x,y];
     }
 
-    function drawPoint(x,y) {
+    function drawPoint(x,y,r) {
         ctx.fillStyle = 'red';
         ctx.beginPath();
-        ctx.arc(x,y,5,0,2*Math.PI); // x,y,radius,startAngle,endAngle
+        ctx.arc(x,y,r,0,2*Math.PI); // x,y,radius,startAngle,endAngle
         ctx.stroke();
         ctx.fill();
     }
@@ -199,21 +211,36 @@
     }
 
     function coordToLonLat(x, y, z) {
-
+        if(x > 1)
+            x = 1;
+        if(y > 1)
+            y = 1;
+        if(z > 1)
+            z = 1;
+        if(x < 0.015 && x > -0.015)
+            x = 0;
+        if(y < 0.015 && y > -0.015)
+            y = 0;
+        if(z < 0.015 && z > -0.015)
+            z = 0;
         /*console.log("X: "+x);
         console.log("Y: "+y);
         console.log("Z: "+z);//*/
 
         // xyz to spherical
         // ONLY TRUE IF r = 1
-        var theta = Math.acos(z);
-        var psi = Math.atan(y/x);
+        var theta = Math.acos(Math.sqrt(x**2 + z**2));
+        var psi = Math.atan(z/x);
         //console.log("theta: " + theta);
         //console.log("psi: " + psi);
         //spherical to lat/long
-        var lon = theta * 180/Math.PI;
-        var lat = psi * 180/Math.PI - 90;
+        var lat = theta * 180/Math.PI;
+        var lon = psi * 180/Math.PI;
 
+        if(y<0)
+            lat = -lat;
+        if(z>0)
+            lon = -lon;
         //console.log("Lon: "+lon);
         //console.log("Lat: "+lat);
         return [lon, lat];
@@ -308,6 +335,7 @@
 
         var earth = createSphere(radius, segments);
       	earth.rotation.y = rotation;
+        earth.rotation.y += 0.3;
         earth.name = "earth";
       	scene.add(earth);
         var clouds = createClouds(radius, segments);
