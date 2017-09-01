@@ -162,31 +162,43 @@
                 sideLength = 50;
                 ctx.clearRect(coordTemp[0]-sideLength/2, coordTemp[1]-sideLength/2,sideLength,sideLength);
             }
-        }
+            console.log("pointCount:" + pointCount + " drawn:" + drawn);
 
-        if(pointCount == 2 && clicked == 1 && drawn == 0) {
-            appendText("Distance between cities:");
-            console.log("Central Angle (deg): " + centralAngle(points[0], points[1]));
-            var ang = centralAngle(points[0], points[1]);
-            appendText("Central Angle: " + ang + "˚");
-            //clicked = 2;
-            var v1 = new THREE.Vector3(points[0].coord[0], points[0].coord[1], points[0].coord[2]);
-            var v2 = new THREE.Vector3(points[1].coord[0], points[1].coord[1], points[1].coord[2]);
-            var curveObject = setArc3D(v1,v2,30, 0x00ff00, false);
-            scene.add(curveObject);
 
-            for(var i = 0; i < curveObject.geometry.vertices.length; i++) {
-                var x3d = curveObject.geometry.vertices[i].x;
-                var y3d = curveObject.geometry.vertices[i].y;
-                var z3d = curveObject.geometry.vertices[i].z;
-                var tLonLat = coordToLonLat(x3d, y3d, z3d);
-                var tCoord = convert(tLonLat[0], tLonLat[1]);
-                drawPoint(tCoord[0], tCoord[1], 1);
+            if(pointCount == 2 && drawn == 0) {
+                appendText("Distance between cities:");
+                console.log("Central Angle (deg): " + centralAngle(points[0], points[1]));
+                var ang = centralAngle(points[0], points[1]);
+                appendText("Central Angle: " + ang + "˚");
+                //clicked = 2;
+                var v1 = new THREE.Vector3(points[0].coord[0], points[0].coord[1], points[0].coord[2]);
+                var v2 = new THREE.Vector3(points[1].coord[0], points[1].coord[1], points[1].coord[2]);
+                var curveObject = setArc3D(v1,v2,30, 0x00ff00, false);
+                curveObject.name = 'arc3d';
+                scene.add(curveObject);
+
+                for(var i = 0; i < curveObject.geometry.vertices.length; i++) {
+                    var x3d = curveObject.geometry.vertices[i].x;
+                    var y3d = curveObject.geometry.vertices[i].y;
+                    var z3d = curveObject.geometry.vertices[i].z;
+                    var tLonLat = coordToLonLat(x3d, y3d, z3d);
+                    var tCoord = convert(tLonLat[0], tLonLat[1]);
+                    drawPoint(tCoord[0], tCoord[1], 1);
+                }
+                appendText("Arc Length = " + 2*Math.PI*6371*ang/360 + " km");
+                drawn = 1;
+                console.log("pointCount:" + pointCount + " drawn:" + drawn);
             }
-            appendText("Arc Length = " + 2*Math.PI*6371*ang/360 + " km");
-            drawn = 1;
-        }
 
+            else if(pointCount == 2 && drawn == 1 && intersects[0].object.name == "coloured") {
+                scene.remove(scene.getObjectByName("arc3d"));
+                intersects[0].object.material.color.set( 0xff0000 );
+                intersects[0].object.name = "coloured"
+                pointCount = 1;
+                drawn = 0;
+                console.log("pointCount:" + pointCount + " drawn:" + drawn);
+            }
+        }
         requestAnimationFrame(render);
         renderer.render(scene, camera);
         clicked = 0;
