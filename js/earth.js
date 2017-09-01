@@ -68,11 +68,11 @@
     // [lon, lat, lon(neg = W), lat(neg=S)]
     cLL[0] = [0,  38.5047,1,1];    // london
     cLL[1] = [0,  48.8566,1,1];    // paris
-    cLL[2] = [79.0059, 55.7128,1,1];    // nyccLL[2] = [79.0059, 55.7128,1,1];    // nyc
-    cLL[3] = [65.0059, 33.7128,1,1];    // nyc
+    cLL[2] = [79.0059, 55.7128,1,1];    // nyc
+    cLL[3] = [65.0059, 33.7128,1,1];    // some canada
     cLL[4] = [10, 65.5200,1,1];    // berlin
-    cLL[5] = [-5.4964, 41.9028,1,1];    // rome
-    cLL[6] = [50,  30];    // birmingham
+    //cLL[5] = [-5.4964, 41.9028,1,1];    // rome
+    cLL[5] = [50,  30];    // birmingham
 
     for(var i = 0; i < cLL.length; i++) {
         cityLoc[i] = lonlatToCoord(cLL[i][0], cLL[i][1], cLL[i][2], cLL[i][3] );
@@ -109,7 +109,6 @@
     canvas.height = 0.995*document.getElementById("map333").offsetHeight;
 
 	render();
-
 	function render() {
 	    controls.update();
 		//earth.rotation.y += 0.0005;
@@ -123,8 +122,10 @@
             /*for ( var i = 0; i < intersects.length; i++ ) {
                 intersects[ i ].object.material.color.set( 0x00ff00 );
             }//*/
-            if(intersects[0].object.name == "draw" ) {
+
+            if(intersects[0].object.name == "draw" && drawn == 0) {
                 intersects[0].object.material.color.set( 0x00ff00 );
+                intersects[0].object.name = "coloured";
 
                 var tempX = intersects[0].point.x;
                 var tempY = intersects[0].point.y;
@@ -146,6 +147,20 @@
                 var coordTemp = convert(tempLonLat[0], tempLonLat[1]);
                 drawPoint(coordTemp[0], coordTemp[1], 5);
                 //appendText("3d Coord: " + [tempX, tempY, tempZ]);
+            }
+            else if(intersects[0].object.name == "coloured" && drawn == 0) {
+                intersects[0].object.material.color.set( 0xff0000 );
+                intersects[0].object.name = "draw";
+                pointCount -= 1;
+
+                var tempX = intersects[0].point.x;
+                var tempY = intersects[0].point.y;
+                var tempZ = intersects[0].point.z;
+
+                var tempLonLat = coordToLonLat(tempX, tempY, tempZ);
+                var coordTemp = convert(tempLonLat[0], tempLonLat[1]);
+                sideLength = 50;
+                ctx.clearRect(coordTemp[0]-sideLength/2, coordTemp[1]-sideLength/2,sideLength,sideLength);
             }
         }
 
@@ -171,6 +186,7 @@
             appendText("Arc Length = " + 2*Math.PI*6371*ang/360 + " km");
             drawn = 1;
         }
+
         requestAnimationFrame(render);
         renderer.render(scene, camera);
         clicked = 0;
